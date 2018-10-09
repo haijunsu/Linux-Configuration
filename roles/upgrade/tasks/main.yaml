@@ -1,0 +1,47 @@
+- name: install updates for CentOS
+  become: true
+  yum: name=* state=latest
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Update and upgrade apt packages for Ubuntu
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400 #One day
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Install provisioning dependencies
+  become: true
+  apt:
+    name: python-lxc
+    state: present
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - lxc_host is defined
+    - lxc_host
+
+- name: Run a complex command within a "running" container
+  become: true
+  lxc_container:
+    name: "{{ item }}"
+    container_command: |
+      echo 'Upgrading {{ item }} ...'
+      apt-get update
+      apt-get upgrade -y
+      apt-get autoremove -y
+      echo 'Upgrade done'
+  with_items: "{{ guest_hosts }}"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - lxc_host is defined
+    - lxc_host
+    - RemoveMeToRun is defined
+
+
+- name: Run a script to upgrade lxc containers
+  script: ./scripts/lxcUpdateGuests.sh
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - lxc_host is defined
+    - lxc_host
