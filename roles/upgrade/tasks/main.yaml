@@ -6,7 +6,7 @@
 - name: Update and upgrade apt packages for Ubuntu
   become: true
   apt:
-    upgrade: yes
+    upgrade: safe
     autoremove: yes
     update_cache: yes
     cache_valid_time: 86400 #One day
@@ -20,7 +20,7 @@
   when:
     - ansible_facts['os_family'] == "Debian"
     - lxc_host is defined
-    - lxc_host
+    - lxc_host|bool
 
 - name: Run a complex command within a "running" container
   become: true
@@ -36,7 +36,7 @@
   when:
     - ansible_facts['os_family'] == "Debian"
     - lxc_host is defined
-    - lxc_host
+    - lxc_host|bool
     - RemoveMeToRun is defined
 
 
@@ -45,4 +45,4 @@
   when:
     - ansible_facts['os_family'] == "Debian"
     - lxc_host is defined
-    - lxc_host
+    - lxc_host|bool
